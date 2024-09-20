@@ -5,13 +5,12 @@
 
 package sounds
 
-import (
-    _ "embed"
-)
+import _ "embed"
 
-var (
 
-    //go:embed sound1.txt
-    Sound1_txt []byte
+//go:embed sound1.txt
+var Sound1_txt string
 
-)
+//go:embed sound2.md
+var Sound2_md string
+

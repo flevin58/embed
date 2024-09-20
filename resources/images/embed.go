@@ -5,13 +5,15 @@
 
 package images
 
-import (
-    _ "embed"
-)
+import _ "embed"
 
-var (
 
-    //go:embed test2.txt
-    Test2_txt []byte
+//go:embed test1.md
+var Test1_md string
 
-)
+//go:embed test2.txt
+var Test2_txt string
+
+//go:embed test3.pdf
+var Test3_pdf []byte
+

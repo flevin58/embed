@@ -5,13 +5,9 @@
 
 package {{ .Package }}
 
-import (
-    _ "embed"
-)
+import _ "embed"
 
-var (
 {{ range .Entries }}
-    //go:embed {{ .File }}
-    {{ .Var }} []byte
+//go:embed {{ .File }}
+var {{ .Var }} {{ .Type }}
 {{ end }}
-)

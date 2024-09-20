@@ -14,23 +14,29 @@ import (
 
 func main() {
 	err := TraverseDir(args.Root)
-	if err == nil && !args.Silent {
+	if err == nil && args.Verbose {
 		fmt.Println("Done.")
 	}
 }
 
-func OkToEmbedFile(filename string) bool {
-	file_ext := path.Ext(filename)
-	extensions := strings.Split(args.Xe, ",")
+func IsFileNameIn(name string, arg string) bool {
+	extensions := strings.Split(arg, ",")
+	fileExt := path.Ext(name)
 	for _, ext := range extensions {
-		if ext[0] != '.' {
+		// Make sure that the extesion always has the '.'
+		if len(ext) > 0 && ext[0] != '.' {
 			ext = "." + ext
 		}
-		if ext == file_ext {
-			return false
+
+		if ext == fileExt {
+			return true
 		}
 	}
-	return true
+	return false
+}
+
+func OkToEmbedFile(filename string) bool {
+	return !IsFileNameIn(filename, args.Xe)
 }
 
 func OkToEmbedDir(foldername string) bool {
@@ -49,6 +55,7 @@ func ProduceEmbedGo(root string, files []string) error {
 	type Entry struct {
 		File string
 		Var  string
+		Type string
 	}
 	type Embed struct {
 		Package string
@@ -62,13 +69,23 @@ func ProduceEmbedGo(root string, files []string) error {
 	}
 
 	// Populate with each file
+	const (
+		TypeByte   = "[]byte"
+		TypeString = "string"
+	)
+
 	for _, file := range files {
 		fvar := strings.Replace(file, ".", "_", -1)
 		fvar = cases.Title(language.Und).String(fvar)
+		ftype := TypeByte
+		if IsFileNameIn(file, args.StrVal) {
+			ftype = TypeString
+		}
 
 		embed.Entries = append(embed.Entries, Entry{
 			File: file,
 			Var:  fvar,
+			Type: ftype,
 		})
 	}
 
@@ -128,7 +145,7 @@ func TraverseDir(root string) error {
 
 	// Now process all the folders
 	for _, folder := range folders {
-		if !args.Silent {
+		if args.Verbose {
 			fmt.Printf("Processing %s\n", folder)
 		}
 		err := TraverseDir(path.Join(root, folder))
