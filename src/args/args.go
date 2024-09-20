@@ -104,6 +104,9 @@ func init() {
 	flag.StringVar(&se, "string", "", "")
 	flag.StringVar(&se, "s", "", "")
 
+	flag.StringVar(&be, "byte", "", "")
+	flag.StringVar(&be, "b", "", "")
+
 	flag.StringVar(&xd, "exclude_dir", "", "")
 	flag.StringVar(&xd, "xd", "", "")
 
