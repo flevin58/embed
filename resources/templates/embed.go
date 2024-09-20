@@ -3,14 +3,11 @@
 // go install https://githib.com/flevin58/embed@latest
 //
 
-package sounds
+package templates
 
 import _ "embed"
 
 
-//go:embed sound1.txt
-var Sound1_txt string
-
-//go:embed sound2.md
-var Sound2_md string
+//go:embed embed.tmpl
+var Embed_tmpl string
 

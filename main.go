@@ -1,6 +1,6 @@
 package main
 
-//go:generate embed -v -s txt,md resources
+//go:generate embed -v -s .tmpl resources
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/flevin58/embed/resources/templates"
 	"github.com/flevin58/embed/src/args"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -22,6 +23,10 @@ func main() {
 }
 
 func IsFileNameIn(name string, arg string) bool {
+	if arg == "all" || arg == "any" {
+		return true
+	}
+
 	extensions := strings.Split(arg, ",")
 	fileExt := path.Ext(name)
 	for _, ext := range extensions {
@@ -92,8 +97,8 @@ func ProduceEmbedGo(root string, files []string) error {
 	}
 
 	// Parse the template
-	var tmplFile = "embed.tmpl"
-	tmpl, err := template.New(tmplFile).ParseFiles(tmplFile)
+	var tmplString = templates.Embed_tmpl
+	tmpl, err := template.New("embed").Parse(tmplString)
 	if err != nil {
 		return fmt.Errorf("error parsing template: %s", err.Error())
 	}
