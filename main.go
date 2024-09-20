@@ -1,6 +1,6 @@
 package main
 
-//go:generate embed -v -s .tmpl resources
+//go:generate embed -i tmpl -s all resources
 
 import (
 	"fmt"
@@ -16,26 +16,27 @@ import (
 )
 
 func main() {
-	err := TraverseDir(args.Root)
-	if err == nil && args.Verbose {
+	if err := TraverseDir(args.Root); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	if args.Verbose {
 		fmt.Println("Done.")
 	}
 }
 
-func IsFileNameIn(name string, arg string) bool {
-	if arg == "all" || arg == "any" {
+func IsItemIn(item string, list []string) bool {
+	// Border cases
+	if len(list) == 0 || list[0] == "none" {
+		return false
+	}
+	if list[0] == "all" {
 		return true
 	}
 
-	extensions := strings.Split(arg, ",")
-	fileExt := path.Ext(name)
-	for _, ext := range extensions {
-		// Make sure that the extesion always has the '.'
-		if len(ext) > 0 && ext[0] != '.' {
-			ext = "." + ext
-		}
-
-		if ext == fileExt {
+	// Now check each item
+	for _, elem := range list {
+		if elem == item {
 			return true
 		}
 	}
@@ -43,19 +44,26 @@ func IsFileNameIn(name string, arg string) bool {
 }
 
 func OkToEmbedFile(filename string) bool {
-	return !IsFileNameIn(filename, args.Xe)
-}
 
-func OkToEmbedDir(foldername string) bool {
-	folders := strings.Split(args.Xd, ",")
-	for _, folder := range folders {
-		if folder == foldername {
-			return false
-		}
+	// If we defined the -x flag
+	if len(args.ExcludedExts) > 0 {
+		return !IsItemIn(path.Ext(filename), args.ExcludedExts)
 	}
+
+	// If we defined the -i flag
+	if len(args.IncludedExts) > 0 {
+		return IsItemIn(path.Ext(filename), args.IncludedExts)
+	}
+
+	// Neither flag defined, assume all files ok
 	return true
 }
 
+func OkToEmbedDir(foldername string) bool {
+	return !IsItemIn(foldername, args.ExcludedDirs)
+}
+
+// Produces the embed.go file in the current folder
 func ProduceEmbedGo(root string, files []string) error {
 
 	// Define the template variables
@@ -84,9 +92,22 @@ func ProduceEmbedGo(root string, files []string) error {
 	for _, file := range files {
 		fvar := strings.Replace(file, ".", "_", -1)
 		fvar = cases.Title(language.Und).String(fvar)
-		ftype := TypeByte
-		if IsFileNameIn(file, args.StrVal) {
+		var ftype string
+
+		// If flag is -s then the default is []byte unless specified
+		if len(args.StringExts) > 0 {
+			ftype = TypeByte
+			if IsItemIn(path.Ext(file), args.StringExts) {
+				ftype = TypeString
+			}
+		}
+
+		// If flag is -b then the default is string unless specified
+		if len(args.ByteExts) > 0 {
 			ftype = TypeString
+			if IsItemIn(path.Ext(file), args.StringExts) {
+				ftype = TypeByte
+			}
 		}
 
 		embed.Entries = append(embed.Entries, Entry{
@@ -103,23 +124,30 @@ func ProduceEmbedGo(root string, files []string) error {
 		return fmt.Errorf("error parsing template: %s", err.Error())
 	}
 
-	// Generate the "embed.go" file
-	fh, err := os.Create(path.Join(root, "embed.go"))
-	if err != nil {
-		return fmt.Errorf("error creating embed.go: %s", err.Error())
-	}
-	defer fh.Close()
+	if args.DryRun {
+		fmt.Printf("Package %s: %d asset(s) would have been embedded\n", embed.Package, len(embed.Entries))
+	} else {
+		// Generate the "embed.go" file
+		fh, err := os.Create(path.Join(root, "embed.go"))
+		if err != nil {
+			return fmt.Errorf("error creating embed.go: %s", err.Error())
+		}
+		defer fh.Close()
 
-	err = tmpl.Execute(fh, embed)
-	if err != nil {
-		return fmt.Errorf("error creating embed.go: %s", err.Error())
-	}
-	if args.Verbose {
-		fmt.Printf("Package %s: %d asset(s) embedded\n", embed.Package, len(embed.Entries))
+		err = tmpl.Execute(fh, embed)
+		if err != nil {
+			return fmt.Errorf("error creating embed.go: %s", err.Error())
+		}
+		if args.Verbose {
+			fmt.Printf("Package %s: %d asset(s) embedded\n", embed.Package, len(embed.Entries))
+		}
 	}
 	return nil
 }
 
+// Traverse recursively the specified root folder
+// Gather the list of files and the list of subfolders
+// If there are files to be processed it calls ProduceEmbedGo()
 func TraverseDir(root string) error {
 	files := make([]string, 0)
 	folders := make([]string, 0)
@@ -130,11 +158,15 @@ func TraverseDir(root string) error {
 	}
 
 	// First determine files from folders
-	//Note: .go files are not considered to be embedded
+	// Note: .go files are not considered to be embedded
 	for _, entry := range entries {
 		if entry.IsDir() {
 			gof := path.Join(root, entry.Name(), "embed.go")
-			os.Remove(gof)
+			if args.DryRun {
+				fmt.Printf("Would have deleted file %s\n", gof)
+			} else {
+				os.Remove(gof)
+			}
 			if OkToEmbedDir(entry.Name()) {
 				folders = append(folders, entry.Name())
 			}
@@ -155,9 +187,11 @@ func TraverseDir(root string) error {
 
 	// Now process all the folders
 	for _, folder := range folders {
-		err := TraverseDir(path.Join(root, folder))
-		if err != nil {
-			return fmt.Errorf("%s", err.Error())
+		if OkToEmbedDir(folder) {
+			err := TraverseDir(path.Join(root, folder))
+			if err != nil {
+				return fmt.Errorf("%s", err.Error())
+			}
 		}
 	}
 	return nil
