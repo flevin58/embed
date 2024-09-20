@@ -1,7 +1,9 @@
 generate:
-	go generate
+	@echo Embedding assets
+	@go generate
 
 install: generate
-	go install
+	@echo Installing the application
+	@go install
 
 all: install

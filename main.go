@@ -114,6 +114,9 @@ func ProduceEmbedGo(root string, files []string) error {
 	if err != nil {
 		return fmt.Errorf("error creating embed.go: %s", err.Error())
 	}
+	if args.Verbose {
+		fmt.Printf("Package %s: %d asset(s) embedded\n", embed.Package, len(embed.Entries))
+	}
 	return nil
 }
 
@@ -152,9 +155,6 @@ func TraverseDir(root string) error {
 
 	// Now process all the folders
 	for _, folder := range folders {
-		if args.Verbose {
-			fmt.Printf("Processing %s\n", folder)
-		}
 		err := TraverseDir(path.Join(root, folder))
 		if err != nil {
 			return fmt.Errorf("%s", err.Error())
