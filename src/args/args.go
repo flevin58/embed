@@ -95,10 +95,10 @@ func collectExcludedDirs() []string {
 func init() {
 	flag.Usage = Usage
 
-	flag.StringVar(&ie, "include_ext", "*", "")
+	flag.StringVar(&ie, "include", "*", "")
 	flag.StringVar(&ie, "i", "", "")
 
-	flag.StringVar(&xe, "exclude_ext", "*", "")
+	flag.StringVar(&xe, "exclude", "*", "")
 	flag.StringVar(&xe, "x", "", "")
 
 	flag.StringVar(&se, "string", "", "")
