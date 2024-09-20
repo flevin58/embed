@@ -1,5 +1,7 @@
 package main
 
+//go:generate embed -v -s txt,md resources
+
 import (
 	"fmt"
 	"html/template"
