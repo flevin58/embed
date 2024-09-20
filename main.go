@@ -105,7 +105,7 @@ func ProduceEmbedGo(root string, files []string) error {
 		// If flag is -b then the default is string unless specified
 		if len(args.ByteExts) > 0 {
 			ftype = TypeString
-			if IsItemIn(path.Ext(file), args.StringExts) {
+			if IsItemIn(path.Ext(file), args.ByteExts) {
 				ftype = TypeByte
 			}
 		}
