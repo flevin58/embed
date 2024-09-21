@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["-v", "resources"]
+            "args": ["-v", "-i", "tmpl", "-d", "resources"]
         }
     ]
 }
