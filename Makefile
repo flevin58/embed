@@ -4,6 +4,6 @@ generate:
 
 install: generate
 	@echo Installing the application
-	@go install
+	@go install -ldflags "-s -w"
 
 all: install
