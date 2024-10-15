@@ -43,21 +43,21 @@ func IsItemIn(item string, list []string) bool {
 }
 
 // Checks if it's ok to parse the given folder
-func OkToEmbedDir(foldername string) bool {
-	return !IsItemIn(foldername, ExcludedDirs)
+func (c *CLI) OkToEmbedDir(foldername string) bool {
+	return !IsItemIn(foldername, c.ExcludedDirs)
 }
 
 // Checks if it's ok to embed the given file
-func OkToEmbedFile(filename string) bool {
+func (c *CLI) OkToEmbedFile(filename string) bool {
 
 	// If we defined the -x flag
-	if len(ExcludedExts) > 0 {
-		return !IsItemIn(path.Ext(filename), ExcludedExts)
+	if len(c.ExcludedExts) > 0 {
+		return !IsItemIn(path.Ext(filename), c.ExcludedExts)
 	}
 
 	// If we defined the -i flag
-	if len(IncludedExts) > 0 {
-		return IsItemIn(path.Ext(filename), IncludedExts)
+	if len(c.IncludedExts) > 0 {
+		return IsItemIn(path.Ext(filename), c.IncludedExts)
 	}
 
 	// Neither flag defined, assume all files ok

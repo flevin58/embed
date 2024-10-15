@@ -13,7 +13,7 @@ import (
 )
 
 // Produces the embed.go file in the current folder
-func ProduceEmbedGo(root string, files []string) error {
+func (c *CLI) ProduceEmbedGo(root string, files []string) error {
 
 	// Define the template variables
 	type Entry struct {
@@ -46,12 +46,12 @@ func ProduceEmbedGo(root string, files []string) error {
 		var ftype = TypeByte
 
 		// Flag -s modifies the default if items are included
-		if len(StringExts) > 0 && IsItemIn(path.Ext(file), StringExts) {
+		if len(c.StringExts) > 0 && IsItemIn(path.Ext(file), c.StringExts) {
 			ftype = TypeString
 		}
 
 		// Flag -b modifies the default if items are excluded
-		if len(ByteExts) > 0 && !IsItemIn(path.Ext(file), ByteExts) {
+		if len(c.ByteExts) > 0 && !IsItemIn(path.Ext(file), c.ByteExts) {
 			ftype = TypeString
 		}
 
@@ -69,7 +69,7 @@ func ProduceEmbedGo(root string, files []string) error {
 		return fmt.Errorf("error parsing template: %s", err.Error())
 	}
 
-	if DryRun {
+	if c.DryRun {
 		fmt.Printf("Package %s: %d asset(s) would have been embedded\n", embed.Package, len(embed.Entries))
 	} else {
 		// Generate the "embed.go" file
@@ -83,7 +83,7 @@ func ProduceEmbedGo(root string, files []string) error {
 		if err != nil {
 			return fmt.Errorf("error creating embed.go: %s", err.Error())
 		}
-		if Verbose {
+		if c.Verbose {
 			fmt.Printf("Package %s: %d asset(s) embedded\n", embed.Package, len(embed.Entries))
 		}
 	}

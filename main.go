@@ -9,5 +9,6 @@ package main
 import "github.com/flevin58/embed/cmd"
 
 func main() {
-	cmd.Execute()
+	//cmd.Execute()
+	cmd.ParseAndRun()
 }

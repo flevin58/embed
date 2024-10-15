@@ -1,61 +1,41 @@
 package cmd
 
 import (
-	"os"
+	"fmt"
 
-	"github.com/spf13/cobra"
+	"github.com/alecthomas/kong"
 )
 
-func embedCmd(cmd *cobra.Command, args []string) {
+func (c *CLI) Run(ctx *kong.Context) error {
 
-	// We expect a single argument = folder to process
-	if len(args) != 1 {
-		cmd.PrintErrln("You must specify the source folder")
-		os.Exit(1)
-	}
-
-	// Check that -x and -i are not used together
-	if len(IncludedExts) > 0 && len(ExcludedExts) > 0 {
-		cmd.PrintErrln("Flags -i and -x can't be used together")
-		os.Exit(1)
-	}
-
-	// Check that -s and -b are not used together
-	if len(StringExts) > 0 && len(ByteExts) > 0 {
-		cmd.PrintErrln("Flags -b and -s can't be used together")
-		os.Exit(1)
-	}
-
-	startFolder := args[0]
-
-	if DryRun {
-		Verbose = true
+	if c.DryRun {
+		c.Verbose = true
 	}
 
 	// Fix dots in extensions to make them compatible with path.Ext()
-	IncludedExts = FixDot(IncludedExts)
-	ExcludedExts = FixDot(ExcludedExts)
-	StringExts = FixDot(StringExts)
-	ByteExts = FixDot(ByteExts)
+	c.IncludedExts = FixDot(c.IncludedExts)
+	c.ExcludedExts = FixDot(c.ExcludedExts)
+	c.StringExts = FixDot(c.StringExts)
+	c.ByteExts = FixDot(c.ByteExts)
 
 	// Print the contents of the flags after processing
-	if Verbose {
-		cmd.Println()
-		cmd.Printf("Root folder.: %v\n", args[0])
-		cmd.Printf("DryRun......: %v\n", DryRun)
-		cmd.Printf("IncludedExts: %v\n", IncludedExts)
-		cmd.Printf("ExcludedExts: %v\n", ExcludedExts)
-		cmd.Printf("ExcludedDirs: %v\n", ExcludedDirs)
-		cmd.Printf("ByteExts....: %v\n", ByteExts)
-		cmd.Printf("StringExts..: %v\n", StringExts)
-		cmd.Println()
+	if c.Verbose {
+		fmt.Println()
+		fmt.Printf("Root folder.: %v\n", c.Folder)
+		fmt.Printf("DryRun......: %v\n", c.DryRun)
+		fmt.Printf("IncludedExts: %v\n", c.IncludedExts)
+		fmt.Printf("ExcludedExts: %v\n", c.ExcludedExts)
+		fmt.Printf("ExcludedDirs: %v\n", c.ExcludedDirs)
+		fmt.Printf("ByteExts....: %v\n", c.ByteExts)
+		fmt.Printf("StringExts..: %v\n", c.StringExts)
+		fmt.Println()
 	}
 
-	if err := TraverseDir(startFolder); err != nil {
-		cmd.PrintErrln(err.Error())
-		os.Exit(1)
+	if err := c.TraverseDir(c.Folder); err != nil {
+		return err
 	}
-	if Verbose {
-		cmd.Println("Done.")
+	if c.Verbose {
+		fmt.Println("Done.")
 	}
+	return nil
 }
