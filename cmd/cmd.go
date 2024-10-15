@@ -11,8 +11,8 @@ type CLI struct {
 	IncludedExts []string `kong:"xor='exts',short='i',help='Extensions to include (all others are excluded)'"`
 	ExcludedExts []string `kong:"xor='exts',short='x',help='Extensions to exclude (all others are included)'"`
 	ExcludedDirs []string `kong:"short='f',help='The subfolder(s) to be excluded from embedding'"`
-	ByteExts     []string `kong:"xor='byte',short='b'"`
-	StringExts   []string `kong:"xor='byte',short='s'"`
+	ByteExts     []string `kong:"xor='byte',short='b',help='Files with given extension(s) are []byte (all others are string)'"`
+	StringExts   []string `kong:"xor='byte',short='s',help='Files with given extension(s) are string (all others are []byte)'"`
 }
 
 var cli CLI
@@ -37,14 +37,3 @@ include _ "embed"
 var Explosion_ogg []byte
 `
 }
-
-// Parse flags and do some checks
-// func init() {
-// 	rootCmd.Flags().BoolVarP(&DryRun, "dry-run", "d", false, "Sets verbose mode and does not touch the file system (use for testing your flags)")
-// 	rootCmd.Flags().BoolVarP(&Verbose, "verbose", "v", false, "Outputs info to standard output")
-// 	rootCmd.Flags().StringSliceVarP(&IncludedExts, "include", "i", []string{}, "Specify extensions to include (all others are excluded)")
-// 	rootCmd.Flags().StringSliceVarP(&ExcludedExts, "exclude", "x", []string{}, "Specify extensions to exclude (all others are included)")
-// 	rootCmd.Flags().StringSliceVarP(&ExcludedDirs, "exclude-dirs", "f", []string{}, "The folder(s) to be excluded from embedding")
-// 	rootCmd.Flags().StringSliceVarP(&ByteExts, "byte", "b", []string{}, "Files with given extension(s) are []byte (all others are string)")
-// 	rootCmd.Flags().StringSliceVarP(&StringExts, "string", "s", []string{}, "Files with given extension(s) are string (all others are []byte)")
-// }
